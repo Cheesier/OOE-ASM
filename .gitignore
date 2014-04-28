@@ -19,3 +19,9 @@
 *.exe
 *.out
 *.app
+
+# Custom
+*.asm
+*csf
+*.hex
+*.proc
