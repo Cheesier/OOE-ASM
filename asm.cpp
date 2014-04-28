@@ -197,21 +197,23 @@ void replaceLabels(vector<string> & ret, int words) {
         }
         else {
             switch(ret[i][0]) {
-                /*case '#':
+                case '#':
                     if (isLabel(ret[i].substr(1, ret[i].length())))
-                        ret[i] = '#' + to_string(labels[ret[i].substr(1, ret[i].length())]);
-                */    break;
+                        ret[i] = to_string(labels[ret[i].substr(1, ret[i].length())]);
+                    break;
                 case '[':
-                    if (isLabel(ret[i].substr(1, ret[i].length()-1)))
-                        ret[i] = '[' + to_string(labels[ret[i].substr(1, ret[i].length()-1)]) + ']';
+                    if (isLabel(ret[i].substr(1, ret[i].length()-2)))
+                        ret[i] = '[' + to_string(labels[ret[i].substr(1, ret[i].length()-2)]) + ']';
                     break;
                 case '(':
-                    if (isLabel(ret[i].substr(1, ret[i].length()-1)))
-                        ret[i] = '(' + to_string(labels[ret[i].substr(1, ret[i].length()-1)]) + ')';
+                    if (isLabel(ret[i].substr(1, ret[i].length()-2)))
+                        ret[i] = '(' + to_string(labels[ret[i].substr(1, ret[i].length()-2)]) + ')';
                     break;
             }
         }
+        //cout << "ret[" << i << "] = " << "\"" << ret[i] << "\"" << endl;
     }
+    //cout << endl;
     return;
 }
 
@@ -257,17 +259,15 @@ void fillMemory(vector<string> & ret, int words) {
             }
 
             for (unsigned i = 0; i < words; i++) {
-                assembly[memoryLocation] += ret[i] + " ";
+                if (i == 1 && words == 3)
+                    assembly[memoryLocation] += ret[i] + ", ";
+                else
+                    assembly[memoryLocation] += ret[i] + " ";
             }
 
             if (debug) cout << assembly[memoryLocation] << " ";
             
-            
-            //if (mode == MODE_IMMEDIATE) {
-            //    immediateValue = adr;
-            //}
-            
-            
+
             if (debug)
                 cout << "op:" << hex << op << ", "
                 << "mode:" << hex << mode << ", "
@@ -292,6 +292,12 @@ void fillMemory(vector<string> & ret, int words) {
                 primMemory[memoryLocation] = immediateValue;
                 assembly[memoryLocation] = "";
                 unsigned w;
+
+                if (words == 3) { 
+                    w = 0; // strange bug when this line is not present
+                    assembly[memoryLocation] += " ";
+                }
+
                 for (unsigned w = 0; w < words-1; w++) {
                     for (unsigned s = 0; s < ret[w].length()+1; s++){
                         assembly[memoryLocation] += " ";
@@ -425,8 +431,8 @@ int getWords(string line, vector<string> & ret) {
                 break;
             default:
                 open = true;
-                if (mightBeHex && line[i] == 'x') {
-                    ret[count] += line[i];
+                if (mightBeHex && tolower(line[i]) == 'x') {
+                    ret[count] += tolower(line[i]);
                     mightBeHex = false;
                 }
                 else
@@ -476,7 +482,7 @@ bool isVR(string word) {
 }
 
 int getRegisterNumber(string word) {
-    if (word[1] == 'R') {
+    if (word[1] == 'R') { // matches GR and VR
         return atoi(&word[2]);
     }
     else {
@@ -498,17 +504,7 @@ int getAdr(string word) {
         default:
             actual = word;
     }
-    //cout << "actual " << actual;
     return toDec(actual);
-    /*
-    if (labelExists(actual))
-        return labels[actual];
-    else if (isHex(actual))
-        return toHex(actual);
-    else
-        reportError("'" + actual + "' is not a valid label or value.");
-    return -1;
-    */
 }
 
 int evalExpr(string word) {
